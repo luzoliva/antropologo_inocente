@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El dilema de Dowayolandia - Nigel Barley</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Firebase App & Firestore SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-serif-title { font-family: 'Cinzel', serif; }
+  </style>
+</head>
+<body class="bg-amber-50 text-stone-800 min-h-screen flex flex-col antialiased selection:bg-amber-200">
+
+  <!-- BARRA SUPERIOR -->
+  <header class="bg-stone-900 text-amber-50 shadow-md border-b-2 border-amber-600/40 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-600 text-stone-950 font-bold p-1.5 rounded-lg text-lg leading-none shadow">🌍</div>
+        <div>
+          <h1 class="font-serif-title text-base sm:text-lg font-bold tracking-wider text-amber-100 uppercase">Dilemas de Dowayolandia</h1>
+          <p class="text-[11px] text-amber-400 font-medium">Seminario Práctico de Antropología · Basado en Nigel Barley</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span id="role-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-900/60 border border-amber-500/30 text-amber-300">Cargando...</span>
+        <button id="toggle-role-btn" class="text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 px-3 py-1.5 rounded-md border border-stone-600 transition">Cambiar Vista</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-grow max-w-7xl mx-auto w-full p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- COLUMNA PRINCIPAL (DILEMA Y OPCIONES) -->
+    <div id="main-column" class="lg:col-span-8 flex flex-col space-y-6">
+
+      <!-- TARJETA DEL CASO -->
+      <section class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-stone-200/80 relative overflow-hidden">
+        <div class="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-amber-500 via-orange-600 to-amber-700"></div>
+        <div class="flex justify-between items-start mb-4">
+          <span id="dilemma-tag" class="text-xs font-bold tracking-widest uppercase bg-amber-100 text-amber-900 px-3 py-1 rounded-full border border-amber-200">Caso 1 de 6</span>
+          <span class="text-xs font-semibold text-stone-500 flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="total-votes-count">0 votos registrados</span>
+          </span>
+        </div>
+        <h2 id="dilemma-title" class="text-xl sm:text-2xl font-bold text-stone-900 mb-3 font-serif-title">Cargando dilema...</h2>
+        <p id="dilemma-desc" class="text-stone-700 text-sm sm:text-base leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100 italic font-normal">Cargando situación de campo...</p>
+      </section>
+
+      <!-- OPCIONES Y VOTOS -->
+      <section class="space-y-3" id="options-container">
+        <!-- Generado dinámicamente -->
+      </section>
+
+      <!-- BOTÓN DE CONFIRMAR VOTO (VISTA ESTUDIANTE) -->
+      <div id="student-actions" class="hidden pt-2">
+        <button id="submit-vote-btn" class="w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-base shadow-lg transition-all transform active:scale-98 disabled:opacity-50">
+          Confirmar Voto Etnográfico
+        </button>
+      </div>
+
+      <!-- ANÁLISIS DE NIGEL BARLEY (REVELABLE POR EL PROFESOR) -->
+      <section id="analysis-card" class="hidden bg-stone-900 text-amber-50 p-6 sm:p-7 rounded-2xl border-l-4 border-amber-500 shadow-xl transition-all duration-300">
+        <div class="flex items-center space-x-2 text-amber-400 mb-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span class="text-xs font-bold uppercase tracking-wider">La realidad de Nigel Barley & Lección Epistemológica</span>
+        </div>
+        <h4 id="analysis-title" class="text-lg font-bold text-white mb-2"></h4>
+        <p id="analysis-text" class="text-stone-300 text-sm leading-relaxed"></p>
+      </section>
+
+    </div>
+
+    <!-- COLUMNA LATERAL (PANEL DEL PROFESOR & QR) -->
+    <aside id="side-column" class="lg:col-span-4 flex flex-col space-y-6">
+
+      <!-- CÓDIGO QR PARA EL AULA -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200/80 text-center">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider mb-1">Acceso Móvil Estudiantes</h3>
+        <p class="text-xs text-stone-500 mb-4">Apunta con la cámara para participar en directo</p>
+        <div class="flex justify-center p-3 bg-amber-50 rounded-xl border border-amber-100 max-w-[220px] mx-auto shadow-inner">
+          <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
+        </div>
+        <p id="qr-url-text" class="text-[11px] font-mono text-stone-400 mt-3 break-all"></p>
+      </div>
+
+      <!-- PANEL DE CONTROL DEL PROFESOR -->
+      <div id="teacher-controls" class="bg-white rounded-2xl p-6 shadow-sm border border-stone-200/80 space-y-4">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider border-b border-stone-100 pb-2">Controles de Moderación</h3>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <button id="prev-dilemma-btn" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold rounded-lg border border-stone-200 transition">← Caso Anterior</button>
+          <button id="next-dilemma-btn" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold rounded-lg border border-stone-200 transition">Siguiente Caso →</button>
+        </div>
+
+        <button id="reveal-analysis-btn" class="w-full py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition shadow flex items-center justify-center space-x-2">
+          <span>Revelar Análisis de Barley</span>
+        </button>
+
+        <button id="reset-votes-btn" class="w-full py-2 px-3 rounded-lg bg-stone-50 hover:bg-red-50 text-stone-600 hover:text-red-600 text-xs font-medium border border-stone-200 hover:border-red-200 transition">
+          Reiniciar Votos de Este Caso
+        </button>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- LÓGICA DE LA APLICACIÓN -->
+  <script>
+    // 1. LOS 6 DILEMAS METODOLÓGICOS DE NIGEL BARLEY
+    const DILEMAS = [
+      {
+        id: 1,
+        tag: "Dilema 1: El Mediador / Informante",
+        title: "El sobrino occidentalizado del Jefe",
+        desc: "Llegas a Poli (norte de Camerún). El jefe local te asigna a su sobrino Matthieu: habla francés, viste ropa europea y te cobra una tarifa abusiva. Descubres enseguida que la comunidad desconfía de él y que filtra todo lo que ves. ¿Cómo procedes?",
+        options: [
+          { key: 'A', text: "Lo despides de inmediato para buscar un informante 'auténtico' y no contaminado entre los ancianos del pueblo." },
+          { key: 'B', text: "Lo mantienes como mediador oficial por cortesía política, pero triangulas discretamente sus datos con otros informantes por la noche." },
+          { key: 'C', text: "Aceptas su figura y conviertes la propia condición híbrida y ambigua de Matthieu en el objeto central de tu investigación." }
+        ],
+        barleyTitle: "La lección de Matthieu y el mito del nativo puro",
+        barleyText: "Barley mantuvo a Matthieu (Opción B/C). Romper con él habría significado un insulto directo al jefe que habría puesto fin al trabajo de campo en el día 2. Además, la antropología contemporánea demuestra que el 'nativo prístino' es un constructo colonial: los mediadores aculturados son actores históricos reales fundamentales."
+      },
+      {
+        id: 2,
+        tag: "Dilema 2: Lingüística y Ridículo",
+        title: "La trampa mortal de las lenguas tonales",
+        desc: "En una asamblea dowayo intentas declarar amablemente en su lengua que 'deseas cocinar un plato tradicional', pero un error de tono transforma tu frase en una propuesta pública de 'copular con la anciana del pueblo'. El silencio es sepulcral. ¿Qué haces?",
+        options: [
+          { key: 'A', text: "Finges un mareo o repentino ataque de fiebre para retirarte a tu choza y evitar el bochorno." },
+          { key: 'B', text: "Pides disculpas riéndote de ti mismo, sacas tu libreta de campo en público y pides que te corrijan el tono exacto." },
+          { key: 'C', text: "Repites la misma frase con más volumen y lentitud pensando que no te han entendido bien." }
+        ],
+        barleyTitle: "El error lingüístico como método de rapport",
+        barleyText: "Barley asumió el ridículo (Opción B). La vulnerabilidad del etnógrafo y la capacidad de reírse de sí mismo desactiva la jerarquía del 'blanco sabelotodo'. El error tonal demostró a los dowayos que su huésped era un ser imperfecto pero dispuesto a aprender con humildad."
+      },
+      {
+        id: 3,
+        tag: "Dilema 3: Tiempo Ritual vs. Beca",
+        title: "El rito de la circuncisión que nunca empieza",
+        desc: "Llevas 4 meses consumiendo tu financiación británica a la espera del gran rito de paso de los jóvenes dowayos. Los ancianos te dicen hoy que este año no se celebrará porque 'hace viento' y las cosechas fueron dudosas. Tu visado expira pronto.",
+        options: [
+          { key: 'A', text: "Ofreces pagar los bueyes y la cerveza de mijo de tu propio bolsillo para financiar el ritual y forzar su celebración." },
+          { key: 'B', text: "Aceptas la frustración y reorientas tu tesis: la suspensión del rito explica mejor la economía política dowayo que el rito mismo." },
+          { key: 'C', text: "Abandonas el poblado y te trasladas a toda prisa a otro grupo étnico vecino que sí esté celebrando festividades." }
+        ],
+        barleyTitle: "La tiranía del calendario etnocéntrico",
+        barleyText: "Barley aprendió a esperar (Opción B). Pagar por un ritual (Opción A) no produce etnografía, sino una pantomima subvencionada. Para los dowayos, el ritual no es un espectáculo académico con fecha fija, sino un equilibrio ecológico y cósmico que se pospone si el entorno no es propicio."
+      },
+      {
+        id: 4,
+        tag: "Dilema 4: Burocracia y Sospecha",
+        title: "El puesto de control y el pasaporte confiscado",
+        desc: "Un gendarme corrupto en la pista hacia Poli retiene tus papeles y cajas de medicinas alegando que tus cartas oficiales de Oxford 'no tienen el sello rojo correcto'. Exige un 'pago por gastos de archivo'. ¿Cómo reaccionas?",
+        options: [
+          { key: 'A', text: "Pagas de inmediato el soborno para continuar el viaje sin complicaciones." },
+          { key: 'B', text: "Amenazas con llamar al Embajador de tu país y a las autoridades policiales de la capital." },
+          { key: 'C', text: "Te sientas en el porche del cuartelillo a charlar pacientemente durante horas, compartiendo tabaco y mostrando fotos de tu familia hasta ablandar al gendarme." }
+        ],
+        barleyTitle: "El arte africano de la paciencia y el desgaste",
+        barleyText: "La confrontación (B) conduce al arresto y el soborno inmediato (A) marca al antropólogo como una fuente inagotable de dinero. La estrategia de Barley (C) demostró que el tiempo y la conversación en África subsahariana disuelven barreras que la legalidad formal no puede resolver."
+      },
+      {
+        id: 5,
+        tag: "Dilema 5: Somática y Medicina",
+        title: "Dolor de muelas en la sabana",
+        desc: "Padeces una infección dental aguda e insoportable a días de distancia de un hospital. El único auxilio es un misionero local que ofrece extraer la muela con unos alicates mecánicos desinfectados con ginebra. ¿Qué decides?",
+        options: [
+          { key: 'A', text: "Rechazas la ayuda, soportas el dolor con paracetamol y organizas una evacuación médica a la capital." },
+          { key: 'B', text: "Te encomiendas al curandero dowayo local y a sus cataplasmas de corteza fermentada." },
+          { key: 'C', text: "Te sientas en la silla plegable del misionero y aceptas la dolorosa extracción improvisada." }
+        ],
+        barleyTitle: "La fragilidad biológica del investigador",
+        barleyText: "Barley aceptó la extracción (Opción C). La gran literatura antropológica clásica solía silenciar la putrefacción corporal, la disentería y el sufrimiento físico. Reconocer que el antropólogo es un organismo biológico frágil y vulnerable humaniza la práctica investigadora."
+      },
+      {
+        id: 6,
+        tag: "Dilema 6: Ética y Tráfico Patrimonial",
+        title: "Los cráneos de los antepasados",
+        desc: "Descubres el enclave sagrado donde los dowayos custodian los cráneos de los linajes antiguos. Un anciano necesitado de dinero te ofrece venderte uno de los cráneos para el Museo Británico. ¿Cómo respondes?",
+        options: [
+          { key: 'A', text: "Lo compras pensando en la salvaguarda y conservación científica de la pieza en una institución europea." },
+          { key: 'B', text: "Rechazas tajantemente la compra, adviertes del daño cultural de expoliar un objeto sagrado y registras el ofrecimiento en tu diario." },
+          { key: 'C', text: "Tomas fotografías detalladas a escondidas y envías las coordenadas a un comerciante de arte de la capital." }
+        ],
+        barleyTitle: "La ética frente al extractivismo patrimonial",
+        barleyText: "Barley fue implacable en su negativa (Opción B). La función del etnógrafo nunca puede ser alimentar el tráfico ilícito ni el extractivismo colonial de museos occidentales a costa de la desesperación económica de los sujetos de estudio."
+      }
+    ];
+
+    // 2. CONFIGURACIÓN DE FIREBASE (EMULADA CON LOCALSTORAGE + BROADCASTCHANNEL SI NO HAY CLAVES DE PRODUCCIÓN)
+    // Esto asegura que la página funcione al 100% de forma autónoma sin necesidad de configurar Firebase obligatoriamente.
+    const channel = new BroadcastChannel('dowayo_session_sync');
+
+    let state = {
+      role: 'projector', // 'projector' o 'student'
+      currentDilemmaIndex: 0,
+      votes: { A: 0, B: 0, C: 0 },
+      hasVoted: false,
+      selectedOption: null,
+      analysisVisible: false
+    };
+
+    // Detectar rol por parámetro de URL o tamaño de pantalla
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedRole = urlParams.get('rol');
+    if (requestedRole === 'estudiante') {
+      state.role = 'student';
+    } else if (requestedRole === 'proyector') {
+      state.role = 'projector';
+    } else {
+      state.role = window.innerWidth < 768 ? 'student' : 'projector';
+    }
+
+    // Inicializar interfaz según rol
+    function applyRoleUI() {
+      const roleBadge = document.getElementById('role-badge');
+      const teacherControls = document.getElementById('teacher-controls');
+      const studentActions = document.getElementById('student-actions');
+      const sideColumn = document.getElementById('side-column');
+      const mainColumn = document.getElementById('main-column');
+
+      if (state.role === 'student') {
+        roleBadge.innerText = 'Modo Alumno';
+        roleBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/30';
+        teacherControls.classList.add('hidden');
+        studentActions.classList.remove('hidden');
+        sideColumn.classList.add('hidden');
+        mainColumn.classList.remove('lg:col-span-8');
+        mainColumn.classList.add('lg:col-span-12');
+      } else {
+        roleBadge.innerText = 'Modo Proyector';
+        roleBadge.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950 text-amber-400 border border-amber-500/30';
+        teacherControls.classList.remove('hidden');
+        studentActions.classList.add('hidden');
+        sideColumn.classList.remove('hidden');
+        mainColumn.classList.add('lg:col-span-8');
+        mainColumn.classList.remove('lg:col-span-12');
+      }
+    }
+
+    // Renderizar dilema actual
+    function renderCurrentDilemma() {
+      const d = DILEMAS[state.currentDilemmaIndex];
+      document.getElementById('dilemma-tag').innerText = `Caso ${d.id} de ${DILEMAS.length}`;
+      document.getElementById('dilemma-title').innerText = d.title;
+      document.getElementById('dilemma-desc').innerText = `"${d.desc}"`;
+
+      // Análisis Barley
+      document.getElementById('analysis-title').innerText = d.barleyTitle;
+      document.getElementById('analysis-text').innerText = d.barleyText;
+      const analysisCard = document.getElementById('analysis-card');
+      if (state.analysisVisible) {
+        analysisCard.classList.remove('hidden');
+      } else {
+        analysisCard.classList.add('hidden');
+      }
+
+      // Opciones
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+
+      const totalVotes = state.votes.A + state.votes.B + state.votes.C;
+      document.getElementById('total-votes-count').innerText = `${totalVotes} voto${totalVotes === 1 ? '' : 's'} registrado${totalVotes === 1 ? '' : 's'}`;
+
+      d.options.forEach(opt => {
+        const count = state.votes[opt.key] || 0;
+        const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+        const isSelected = state.selectedOption === opt.key;
+
+        const card = document.createElement('div');
+        card.className = `p-4 sm:p-5 rounded-xl border transition-all cursor-pointer relative overflow-hidden ${
+          isSelected 
+            ? 'border-amber-600 bg-amber-50/80 shadow-md ring-2 ring-amber-500/30' 
+            : 'border-stone-200 bg-white hover:border-amber-300'
+        }`;
+
+        card.innerHTML = `
+          <!-- Barra de porcentaje animada de fondo (en proyector) -->
+          <div class="absolute left-0 top-0 bottom-0 bg-amber-100/70 transition-all duration-500 ease-out z-0 pointer-events-none" style="width: ${state.role === 'projector' ? pct : 0}%"></div>
+          
+          <div class="relative z-10 flex items-start justify-between">
+            <div class="flex items-start space-x-3 pr-4">
+              <span class="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg font-bold text-xs ${isSelected ? 'bg-amber-600 text-white' : 'bg-stone-100 text-stone-700'}">${opt.key}</span>
+              <p class="text-sm sm:text-base font-medium text-stone-800 leading-snug pt-0.5">${opt.text}</p>
+            </div>
+            
+            <!-- Resultados (visibles principalmente en el proyector) -->
+            ${state.role === 'projector' ? `
+              <div class="flex flex-col items-end flex-shrink-0 pl-2">
+                <span class="text-base font-bold text-stone-900">${pct}%</span>
+                <span class="text-[11px] text-stone-500">${count} voto${count === 1 ? '' : 's'}</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        // Interacción para estudiante
+        if (state.role === 'student') {
+          card.onclick = () => {
+            if (state.hasVoted) return;
+            state.selectedOption = opt.key;
+            renderCurrentDilemma();
+          };
+        }
+
+        container.appendChild(card);
+      });
+
+      // Estado del botón votar para alumnos
+      const submitBtn = document.getElementById('submit-vote-btn');
+      if (state.role === 'student') {
+        if (state.hasVoted) {
+          submitBtn.disabled = true;
+          submitBtn.innerText = '✓ Voto Enviado al Proyector';
+          submitBtn.className = 'w-full py-4 rounded-xl bg-emerald-600 text-white font-bold text-base shadow transition';
+        } else {
+          submitBtn.disabled = !state.selectedOption;
+          submitBtn.innerText = state.selectedOption ? `Confirmar Opción ${state.selectedOption}` : 'Elige una opción arriba';
+          submitBtn.className = 'w-full py-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-base shadow-lg transition-all transform active:scale-98 disabled:opacity-50';
+        }
+      }
+    }
+
+    // 3. GENERADOR DE CÓDIGO QR PARA EL AULA
+    function initQRCode() {
+      const qrTarget = document.getElementById('qrcode');
+      qrTarget.innerHTML = '';
+      
+      // La URL de los estudiantes apunta a la página actual con ?rol=estudiante
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('rol', 'estudiante');
+      const studentUrl = currentUrl.toString();
+
+      document.getElementById('qr-url-text').innerText = studentUrl;
+
+      new QRCode(qrTarget, {
+        text: studentUrl,
+        width: 170,
+        height: 170,
+        colorDark: "#292524",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    // 4. SINCRONIZACIÓN EN TIEMPO REAL
+    function broadcastState(type, payload = {}) {
+      const msg = { type, ...payload, senderRole: state.role };
+      channel.postMessage(msg);
+      // Guardar también en localStorage para persistencia local de la pestaña
+      localStorage.setItem('dowayo_live_sync', JSON.stringify({ msg, timestamp: Date.now() }));
+    }
+
+    channel.onmessage = (event) => {
+      handleSyncMessage(event.data);
+    };
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'dowayo_live_sync' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          handleSyncMessage(data.msg);
+        } catch(err){}
+      }
+    });
+
+    function handleSyncMessage(msg) {
+      if (!msg) return;
+
+      if (msg.type === 'VOTE_SUBMITTED') {
+        if (state.role === 'projector') {
+          state.votes[msg.option] = (state.votes[msg.option] || 0) + 1;
+          renderCurrentDilemma();
+          broadcastState('SYNC_VOTES_STATE', { votes: state.votes });
+        }
+      } else if (msg.type === 'CHANGE_DILEMMA') {
+        state.currentDilemmaIndex = msg.index;
+        state.votes = { A: 0, B: 0, C: 0 };
+        state.hasVoted = false;
+        state.selectedOption = null;
+        state.analysisVisible = false;
+        renderCurrentDilemma();
+      } else if (msg.type === 'TOGGLE_ANALYSIS') {
+        state.analysisVisible = msg.visible;
+        renderCurrentDilemma();
+      } else if (msg.type === 'RESET_VOTES') {
+        state.votes = { A: 0, B: 0, C: 0 };
+        state.hasVoted = false;
+        state.selectedOption = null;
+        renderCurrentDilemma();
+      } else if (msg.type === 'SYNC_VOTES_STATE') {
+        state.votes = msg.votes;
+        renderCurrentDilemma();
+      }
+    }
+
+    // 5. EVENT LISTENERS
+    document.getElementById('toggle-role-btn').onclick = () => {
+      state.role = state.role === 'projector' ? 'student' : 'projector';
+      applyRoleUI();
+      renderCurrentDilemma();
+    };
+
+    document.getElementById('prev-dilemma-btn').onclick = () => {
+      if (state.currentDilemmaIndex > 0) {
+        state.currentDilemmaIndex--;
+        state.votes = { A: 0, B: 0, C: 0 };
+        state.analysisVisible = false;
+        renderCurrentDilemma();
+        broadcastState('CHANGE_DILEMMA', { index: state.currentDilemmaIndex });
+      }
+    };
+
+    document.getElementById('next-dilemma-btn').onclick = () => {
+      if (state.currentDilemmaIndex < DILEMAS.length - 1) {
+        state.currentDilemmaIndex++;
+        state.votes = { A: 0, B: 0, C: 0 };
+        state.analysisVisible = false;
+        renderCurrentDilemma();
+        broadcastState('CHANGE_DILEMMA', { index: state.currentDilemmaIndex });
+      }
+    };
+
+    document.getElementById('reveal-analysis-btn').onclick = () => {
+      state.analysisVisible = !state.analysisVisible;
+      renderCurrentDilemma();
+      broadcastState('TOGGLE_ANALYSIS', { visible: state.analysisVisible });
+    };
+
+    document.getElementById('reset-votes-btn').onclick = () => {
+      state.votes = { A: 0, B: 0, C: 0 };
+      renderCurrentDilemma();
+      broadcastState('RESET_VOTES');
+    };
+
+    document.getElementById('submit-vote-btn').onclick = () => {
+      if (!state.selectedOption || state.hasVoted) return;
+      state.hasVoted = true;
+      broadcastState('VOTE_SUBMITTED', { option: state.selectedOption });
+      renderCurrentDilemma();
+    };
+
+    // Inicialización al cargar
+    applyRoleUI();
+    renderCurrentDilemma();
+    initQRCode();
+  </script>
+</body>
+</html>
